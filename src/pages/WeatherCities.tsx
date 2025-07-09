@@ -2,13 +2,17 @@ import { Box } from "@mui/material";
 import WeatherCard from "../components/weatherCities/WeatherCard";
 import WeatherSearch from "../components/weatherCities/WeatherSearch";
 import { useEffect, useState } from "react";
-import { weatherService } from "../services/weatherService";
-import { WeatherData } from "../types/weather";
 import { localStorageService } from "../services/localStorageService";
+import { useAppDispatch, useAppSelector } from "../hooks/reduxHooks";
+import { fetchWeatherByCity } from "../features/weather/weatherSlice";
+import WeatherCardSkeleton from "../components/weatherCities/WeatherCardSkeleton";
+import WeatherCardError from "../components/weatherCities/WeatherCardError";
 
 const WeatherCities = () => {
+  const dispatch = useAppDispatch();
   const [cities, setCities] = useState<string[]>([]);
-  const [weatherDataList, setWeatherDataList] = useState<WeatherData[]>([]);
+  const weatherDataMap = useAppSelector((state) => state.weather.data);
+  const error = useAppSelector((state) => state.weather.error);
 
   useEffect(() => {
     const stored = localStorageService.getCities();
@@ -16,39 +20,30 @@ const WeatherCities = () => {
   }, []);
 
   useEffect(() => {
-    const fetchWeatherForCities = async () => {
-      const data: WeatherData[] = [];
-
-      for (const city of cities) {
-        try {
-          const response = await weatherService.getCurrentWeatherByCity(city);
-          const weather = response.list[0];
-
-          data.push({
-            city: response.city.name,
-            temperature: Math.round(weather.temp.day),
-            condition: weather.weather[0].main,
-            humidity: weather.humidity,
-            windSpeed: weather.speed,
-          });
-        } catch (error) {
-          console.error(`Failed to load weather for ${city}`, error);
-        }
+    cities.forEach((city) => {
+      if (!weatherDataMap[city]) {
+        dispatch(fetchWeatherByCity(city));
       }
-
-      setWeatherDataList(data);
-    };
-
-    if (cities.length > 0) {
-      fetchWeatherForCities();
-    }
-  }, [cities]);
+    });
+  }, [cities, weatherDataMap, dispatch]);
 
   const handleAddCity = (newCity: string) => {
     setCities((prev) => {
       if (prev.includes(newCity)) return prev;
 
       const updated = [...prev, newCity];
+      localStorageService.saveCities(updated);
+      return updated;
+    });
+  };
+
+  const reloadCityWeather = (city: string) => {
+    dispatch(fetchWeatherByCity(city));
+  };
+
+  const handleRemoveCity = (cityToRemove: string) => {
+    setCities((prev) => {
+      const updated = prev.filter((c) => c !== cityToRemove);
       localStorageService.saveCities(updated);
       return updated;
     });
@@ -65,16 +60,34 @@ const WeatherCities = () => {
           p: 2,
         }}
       >
-        {weatherDataList.map((weather) => (
-          <WeatherCard
-            key={weather.city}
-            city={weather.city}
-            temperature={weather.temperature}
-            condition={weather.condition}
-            humidity={weather.humidity}
-            windSpeed={weather.windSpeed}
-          />
-        ))}
+        {cities.map((city) => {
+          const weather = weatherDataMap[city];
+
+          if (!weather?.list?.length) {
+            return <WeatherCardSkeleton key={city} />;
+          }
+
+          if (error) {
+            return <WeatherCardError key={city} city={city} error={error} />;
+          }
+
+          const weatherInfo = {
+            city,
+            temperature: Math.round(weather.list[0].temp.day),
+            condition: weather.list[0].weather[0].main,
+            humidity: weather.list[0].humidity,
+            windSpeed: weather.list[0].speed,
+          };
+
+          return (
+            <WeatherCard
+              key={city}
+              {...weatherInfo}
+              onCityReload={() => reloadCityWeather(city)}
+              onCityDelete={() => handleRemoveCity(city)}
+            />
+          );
+        })}
       </Box>
     </>
   );

@@ -1,5 +1,13 @@
-import { Card, CardContent, Typography, Box, Divider } from "@mui/material";
-import { WbSunny, Cloud, Opacity, Air, Thermostat } from "@mui/icons-material";
+import {
+  Card,
+  CardContent,
+  Typography,
+  Box,
+  Divider,
+  IconButton,
+} from "@mui/material";
+import { Opacity, Air, Thermostat, Refresh, Delete } from "@mui/icons-material";
+import { Link } from "react-router-dom";
 
 interface WeatherCardProps {
   city: string;
@@ -7,6 +15,8 @@ interface WeatherCardProps {
   condition: string;
   humidity: number;
   windSpeed: number;
+  onCityReload?: () => void;
+  onCityDelete?: () => void;
 }
 
 const WeatherCard: React.FC<WeatherCardProps> = ({
@@ -15,22 +25,26 @@ const WeatherCard: React.FC<WeatherCardProps> = ({
   condition,
   humidity,
   windSpeed,
+  onCityReload,
+  onCityDelete,
 }) => {
-  const getWeatherIcon = () => {
-    if (condition.toLowerCase().includes("cloud")) {
-      return <Cloud fontSize="large" color="primary" />;
-    }
-    return <WbSunny fontSize="large" color="warning" />;
-  };
-
   return (
     <Card
+      component={Link}
+      to={`/${encodeURIComponent(city)}`}
       sx={{
         width: "31%",
         minWidth: 275,
         borderRadius: 3,
         boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
         background: "linear-gradient(145deg, #f5f7fa 0%, #e4e8eb 100%)",
+        textDecoration: "none",
+        color: "inherit",
+        transition: "transform 0.3s ease, box-shadow 0.3s ease",
+        "&:hover": {
+          transform: "scale(1.03)",
+          boxShadow: "0 6px 20px rgba(0,0,0,0.2)",
+        },
       }}
     >
       <CardContent>
@@ -44,7 +58,29 @@ const WeatherCard: React.FC<WeatherCardProps> = ({
           <Typography variant="h5" component="div" sx={{ fontWeight: "bold" }}>
             {city}
           </Typography>
-          {getWeatherIcon()}
+          <Box sx={{ display: "flex", gap: 1 }}>
+            <IconButton
+              size="small"
+              onClick={(e) => {
+                e.stopPropagation();
+                e.preventDefault();
+                onCityReload?.();
+              }}
+            >
+              <Refresh fontSize="small" />
+            </IconButton>
+            <IconButton
+              size="small"
+              color="error"
+              onClick={(e) => {
+                e.stopPropagation();
+                e.preventDefault();
+                onCityDelete?.();
+              }}
+            >
+              <Delete fontSize="small" />
+            </IconButton>
+          </Box>
         </Box>
 
         <Box sx={{ display: "flex", alignItems: "center", mt: 1 }}>

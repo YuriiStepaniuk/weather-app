@@ -10,14 +10,28 @@ export const fetchWeatherByCity = createAsyncThunk(
   },
 );
 
+export const fetchWeatherForCities = createAsyncThunk(
+  "weather/fetchForCities",
+  async (cities: string[]) => {
+    const results: Record<string, WeatherForecastResponse> = {};
+
+    for (const city of cities) {
+      const response = await weatherService.getCurrentWeatherByCity(city);
+      results[city] = response;
+    }
+
+    return results;
+  },
+);
+
 interface WeatherState {
-  data: WeatherForecastResponse | null;
+  data: Record<string, WeatherForecastResponse>;
   loading: boolean;
   error: string | null;
 }
 
 const initialState: WeatherState = {
-  data: null,
+  data: {},
   loading: false,
   error: null,
 };
@@ -27,27 +41,35 @@ const weatherSlice = createSlice({
   initialState,
   reducers: {
     clearWeather(state) {
-      state.data = null;
+      state.data = {};
       state.error = null;
       state.loading = false;
     },
   },
   extraReducers: (builder) => {
     builder
-      .addCase(fetchWeatherByCity.pending, (state) => {
+      .addCase(fetchWeatherForCities.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
       .addCase(
-        fetchWeatherByCity.fulfilled,
-        (state, action: PayloadAction<WeatherForecastResponse>) => {
+        fetchWeatherForCities.fulfilled,
+        (
+          state,
+          action: PayloadAction<Record<string, WeatherForecastResponse>>,
+        ) => {
           state.loading = false;
-          state.data = action.payload;
+          state.data = { ...state.data, ...action.payload }; // merge new data
         },
       )
-      .addCase(fetchWeatherByCity.rejected, (state, action) => {
+      .addCase(fetchWeatherForCities.rejected, (state, action) => {
         state.loading = false;
         state.error = action.error.message ?? "Failed to fetch weather";
+      })
+      .addCase(fetchWeatherByCity.fulfilled, (state, action) => {
+        state.loading = false;
+        const city = action.meta.arg;
+        state.data[city] = action.payload;
       });
   },
 });
