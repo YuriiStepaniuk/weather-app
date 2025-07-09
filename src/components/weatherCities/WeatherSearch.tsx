@@ -1,82 +1,79 @@
 import {
   TextField,
-  Button,
   Box,
-  InputAdornment,
   IconButton,
+  Autocomplete,
+  CircularProgress,
 } from "@mui/material";
 import { Search, MyLocation } from "@mui/icons-material";
-import { styled } from "@mui/material/styles";
 import { useState, FC } from "react";
-
-const SearchButton = styled(Button)(({ theme }) => ({
-  height: "56px",
-  marginLeft: theme.spacing(1),
-  background: "linear-gradient(45deg, #2196F3 30%, #21CBF3 90%)",
-  "&:hover": {
-    background: "linear-gradient(45deg, #1976D2 30%, #1E88E5 90%)",
-  },
-}));
+import { CityOption } from "../../types/geocoding";
+import { useCitySearch } from "../../hooks/useCitySearch";
+import { formatCityOptions } from "../../utils/formatCityOptions";
 
 interface WeatherSearchProps {
   onSearch: (city: string) => void;
 }
 
 const WeatherSearch: FC<WeatherSearchProps> = ({ onSearch }) => {
-  const [location, setLocation] = useState<string>("");
+  const [inputValue, setInputValue] = useState("");
+
+  const [selectedCity, setSelectedCity] = useState<CityOption | null>(null);
+
+  const { options, loading } = useCitySearch(inputValue);
 
   const handleSearch = () => {
-    if (location) {
-      onSearch(location.trim());
+    if (selectedCity) {
+      onSearch(selectedCity.name);
     }
   };
 
-  const handleCurrentLocation = () => {
-    console.log("Getting current location");
-  };
-
   return (
-    <Box sx={{ display: "flex", alignItems: "center", my: 3 }}>
-      <TextField
+    <Box sx={{ display: "flex", alignItems: "center", my: 3, gap: 1 }}>
+      <Autocomplete
         fullWidth
-        variant="outlined"
-        placeholder="Search location..."
-        value={location}
-        onChange={(e) => setLocation(e.target.value)}
-        InputProps={{
-          startAdornment: (
-            <InputAdornment position="start">
-              <Search color="action" />
-            </InputAdornment>
-          ),
-          endAdornment: location && (
-            <InputAdornment position="end">
-              <IconButton onClick={() => setLocation("")} size="small">
-                ×
-              </IconButton>
-            </InputAdornment>
-          ),
-          sx: {
-            borderRadius: "8px",
-            backgroundColor: "background.paper",
-          },
-        }}
-        onKeyPress={(e) => e.key === "Enter" && handleSearch()}
+        options={options}
+        loading={loading}
+        value={selectedCity}
+        inputValue={inputValue}
+        onInputChange={(_, newInput) => setInputValue(newInput)}
+        onChange={(_, newValue) => setSelectedCity(newValue)}
+        getOptionLabel={(option) => formatCityOptions(option)}
+        isOptionEqualToValue={(option, value) =>
+          option.lat === value.lat && option.lon === value.lon
+        }
+        renderOption={(props, option) => (
+          <li {...props} key={`${option.lat}-${option.lon}`}>
+            {formatCityOptions(option)}
+          </li>
+        )}
+        renderInput={(params) => (
+          <TextField
+            {...params}
+            label="Search city"
+            variant="outlined"
+            InputProps={{
+              ...params.InputProps,
+              endAdornment: (
+                <>
+                  {loading ? <CircularProgress size={20} /> : null}
+                  {params.InputProps.endAdornment}
+                </>
+              ),
+            }}
+          />
+        )}
       />
-
-      <SearchButton
-        variant="contained"
-        onClick={handleSearch}
-        startIcon={<Search />}
-      >
-        Search
-      </SearchButton>
 
       <IconButton
         color="primary"
-        sx={{ ml: 1 }}
-        onClick={handleCurrentLocation}
+        onClick={handleSearch}
+        disabled={!selectedCity}
       >
+        <Search />
+      </IconButton>
+
+      <IconButton color="primary" onClick={() => console.log("Get location")}>
         <MyLocation />
       </IconButton>
     </Box>

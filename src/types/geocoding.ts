@@ -6,3 +6,11 @@ export type GeocodingResult = {
   country: string;
   state?: string;
 };
+
+export type CityOption = {
+  name: string;
+  country: string;
+  state?: string;
+  lat: number;
+  lon: number;
+};

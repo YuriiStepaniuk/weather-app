@@ -3,42 +3,59 @@ import WeatherCard from "../components/weatherCities/WeatherCard";
 import WeatherSearch from "../components/weatherCities/WeatherSearch";
 import { useEffect, useState } from "react";
 import { weatherService } from "../services/weatherService";
+import { WeatherData } from "../types/weather";
+import { localStorageService } from "../services/localStorageService";
 
 const WeatherCities = () => {
-  const [weatherData, setWeatherData] = useState<{
-    city: string;
-    temperature: number;
-    condition: string;
-    humidity: number;
-    windSpeed: number;
-  } | null>(null);
-
-  const [city, setCity] = useState("");
+  const [cities, setCities] = useState<string[]>([]);
+  const [weatherDataList, setWeatherDataList] = useState<WeatherData[]>([]);
 
   useEffect(() => {
-    const fetchWeather = async () => {
-      try {
-        const data = await weatherService.getCurrentWeatherByCity(city);
-        const weather = data.list[0];
+    const stored = localStorageService.getCities();
+    setCities(stored);
+  }, []);
 
-        setWeatherData({
-          city: data.city.name,
-          temperature: Math.round(weather.temp.day),
-          condition: weather.weather[0].main,
-          humidity: weather.humidity,
-          windSpeed: weather.speed,
-        });
-      } catch (error) {
-        console.error("Failed to load weather:", error);
+  useEffect(() => {
+    const fetchWeatherForCities = async () => {
+      const data: WeatherData[] = [];
+
+      for (const city of cities) {
+        try {
+          const response = await weatherService.getCurrentWeatherByCity(city);
+          const weather = response.list[0];
+
+          data.push({
+            city: response.city.name,
+            temperature: Math.round(weather.temp.day),
+            condition: weather.weather[0].main,
+            humidity: weather.humidity,
+            windSpeed: weather.speed,
+          });
+        } catch (error) {
+          console.error(`Failed to load weather for ${city}`, error);
+        }
       }
+
+      setWeatherDataList(data);
     };
 
-    fetchWeather();
-  }, [city]);
+    if (cities.length > 0) {
+      fetchWeatherForCities();
+    }
+  }, [cities]);
 
+  const handleAddCity = (newCity: string) => {
+    setCities((prev) => {
+      if (prev.includes(newCity)) return prev;
+
+      const updated = [...prev, newCity];
+      localStorageService.saveCities(updated);
+      return updated;
+    });
+  };
   return (
     <>
-      <WeatherSearch onSearch={setCity} />
+      <WeatherSearch onSearch={handleAddCity} />
       <Box
         sx={{
           display: "flex",
@@ -48,15 +65,16 @@ const WeatherCities = () => {
           p: 2,
         }}
       >
-        {weatherData && (
+        {weatherDataList.map((weather) => (
           <WeatherCard
-            city={weatherData.city}
-            temperature={weatherData.temperature}
-            condition={weatherData.condition}
-            humidity={weatherData.humidity}
-            windSpeed={weatherData.windSpeed}
+            key={weather.city}
+            city={weather.city}
+            temperature={weather.temperature}
+            condition={weather.condition}
+            humidity={weather.humidity}
+            windSpeed={weather.windSpeed}
           />
-        )}
+        ))}
       </Box>
     </>
   );

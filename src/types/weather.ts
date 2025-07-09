@@ -59,3 +59,11 @@ export interface Weather {
   description: string;
   icon: string;
 }
+
+export type WeatherData = {
+  city: string;
+  temperature: number;
+  condition: string;
+  humidity: number;
+  windSpeed: number;
+};
