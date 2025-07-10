@@ -66,6 +66,7 @@ const WeatherCard: React.FC<WeatherCardProps> = ({
                 e.preventDefault();
                 onCityReload?.();
               }}
+              aria-label="refresh"
             >
               <Refresh fontSize="small" />
             </IconButton>
@@ -77,6 +78,7 @@ const WeatherCard: React.FC<WeatherCardProps> = ({
                 e.preventDefault();
                 onCityDelete?.();
               }}
+              aria-label="delete"
             >
               <Delete fontSize="small" />
             </IconButton>
