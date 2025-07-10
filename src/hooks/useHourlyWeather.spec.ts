@@ -20,14 +20,11 @@ describe("useHourlyWeather", () => {
 
     const { result } = renderHook(() => useHourlyWeather("Kyiv"));
 
-    // Initially loading true and no data
     expect(result.current.loading).toBe(true);
     expect(result.current.hourlyData).toEqual([]);
 
-    // Wait until loading becomes false (meaning data loaded or error)
     await waitFor(() => expect(result.current.loading).toBe(false));
 
-    // Now check the state after loading
     expect(mockGetWeatherHourly).toHaveBeenCalledWith("Kyiv");
     expect(result.current.hourlyData).toHaveLength(24);
     expect(result.current.error).toBeNull();
