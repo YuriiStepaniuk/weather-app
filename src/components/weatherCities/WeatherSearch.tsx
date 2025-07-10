@@ -5,7 +5,7 @@ import {
   Autocomplete,
   CircularProgress,
 } from "@mui/material";
-import { Search, MyLocation } from "@mui/icons-material";
+import { Search } from "@mui/icons-material";
 import { useState, FC } from "react";
 import { CityOption } from "../../types/geocoding";
 import { useCitySearch } from "../../hooks/useCitySearch";
@@ -69,12 +69,9 @@ const WeatherSearch: FC<WeatherSearchProps> = ({ onSearch }) => {
         color="primary"
         onClick={handleSearch}
         disabled={!selectedCity}
+        aria-label="search"
       >
         <Search />
-      </IconButton>
-
-      <IconButton color="primary" onClick={() => console.log("Get location")}>
-        <MyLocation />
       </IconButton>
     </Box>
   );

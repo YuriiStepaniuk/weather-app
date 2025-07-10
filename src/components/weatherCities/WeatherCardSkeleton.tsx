@@ -12,16 +12,40 @@ const WeatherCardSkeleton = () => {
       }}
     >
       {/* Skeleton for title */}
-      <Skeleton variant="text" width="60%" height={32} sx={{ mb: 1 }} />
+      <Skeleton
+        variant="text"
+        width="60%"
+        height={32}
+        sx={{ mb: 1 }}
+        data-testid="skeleton-text"
+      />
 
       {/* Skeleton for temperature */}
-      <Skeleton variant="rectangular" width={80} height={40} sx={{ mb: 1 }} />
+      <Skeleton
+        variant="rectangular"
+        width={80}
+        height={40}
+        sx={{ mb: 1 }}
+        data-testid="skeleton-rect"
+      />
 
       {/* Skeleton for condition */}
-      <Skeleton variant="text" width="40%" height={24} sx={{ mb: 2 }} />
+      <Skeleton
+        variant="text"
+        width="40%"
+        height={24}
+        sx={{ mb: 2 }}
+        data-testid="skeleton-text"
+      />
 
       {/* Skeleton for divider */}
-      <Skeleton variant="rectangular" width="100%" height={1} sx={{ mb: 2 }} />
+      <Skeleton
+        variant="rectangular"
+        width="100%"
+        height={1}
+        sx={{ mb: 2 }}
+        data-testid="skeleton-rect"
+      />
 
       {/* Skeletons for humidity and wind */}
       <Box sx={{ display: "flex", justifyContent: "space-between" }}>
