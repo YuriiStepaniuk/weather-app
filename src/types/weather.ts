@@ -67,3 +67,55 @@ export type WeatherData = {
   humidity: number;
   windSpeed: number;
 };
+
+export type WeatherDataHourly = {
+  dt: number;
+  main: {
+    temp: number;
+    feels_like: number;
+    humidity: number;
+    pressure: number;
+  };
+  wind: {
+    speed: number;
+    deg: number;
+  };
+  clouds: {
+    all: number;
+  };
+  visibility: number;
+  rain?: {
+    "3h": number;
+  };
+  snow?: {
+    "3h": number;
+  };
+  weather: Array<{
+    main: string;
+  }>;
+};
+
+export interface WeatherForecastHourlyResponse {
+  city: {
+    id: number;
+    name: string;
+    coord: { lat: number; lon: number };
+    country: string;
+    population: number;
+    timezone: number;
+  };
+  cod: string;
+  message: number;
+  cnt: number;
+  list: WeatherDataHourly[];
+}
+
+export interface ChartDataPoint {
+  time: string;
+  temp: number;
+}
+
+export interface DetailItem {
+  label: string;
+  icon: React.ReactNode;
+}

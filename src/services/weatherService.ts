@@ -1,6 +1,9 @@
 import { ENV } from "../config/env";
 import { WEATHER_CONFIG } from "../config/weather";
-import { WeatherForecastResponse } from "../types/weather";
+import {
+  WeatherForecastHourlyResponse,
+  WeatherForecastResponse,
+} from "../types/weather";
 import { createUrlSearchParams } from "../utils/createUrlSearchParams";
 import { fetchData } from "../utils/fetchData";
 import { GeocodingService, geocodingService } from "./geocodingService";
@@ -23,7 +26,20 @@ class WeatherService {
     return fetchData(`${ENV.OPENWEATHER_BASE_URL_DAILY}?${urlParams}`);
   }
 
-  async getWeatherHourly() {}
+  async getWeatherHourly(
+    cityName: string,
+  ): Promise<WeatherForecastHourlyResponse> {
+    const { lat, lon } = await this.geocodingService.getCoordinates(cityName);
+    const urlParams = createUrlSearchParams({
+      lat,
+      lon,
+      appid: ENV.OPENWEATHER_API_KEY,
+      units: WEATHER_CONFIG.units,
+      cnt: WEATHER_CONFIG.forecastHours,
+    });
+
+    return fetchData(`${ENV.OPENWEATHER_BASE_URL_HOURLY}?${urlParams}`);
+  }
 }
 
 export const weatherService = new WeatherService(geocodingService);

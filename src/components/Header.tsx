@@ -1,6 +1,8 @@
-import { AppBar, Toolbar, Typography, Box, IconButton } from "@mui/material";
-import { WbSunny, Menu } from "@mui/icons-material";
+import { AppBar, Toolbar, Typography } from "@mui/material";
+import { WbSunny } from "@mui/icons-material";
 import { styled } from "@mui/material/styles";
+import { Link } from "react-router-dom";
+import { ROUTE } from "../route";
 
 const StyledAppBar = styled(AppBar)(({ theme }) => ({
   background: "linear-gradient(45deg, #2196F3 30%, #21CBF3 90%)",
@@ -13,15 +15,15 @@ const Header = () => {
   return (
     <StyledAppBar position="static">
       <Toolbar>
-        <IconButton edge="start" color="inherit" aria-label="menu">
-          <Menu />
-        </IconButton>
-        <Box
-          sx={{
-            display: "flex",
-            alignItems: "center",
+        <Link
+          to={ROUTE.HOME}
+          style={{
+            textDecoration: "none",
+            color: "inherit",
             flexGrow: 1,
+            display: "flex",
             justifyContent: "center",
+            alignItems: "center",
           }}
         >
           <WbSunny fontSize="large" sx={{ mr: 1 }} />
@@ -35,8 +37,7 @@ const Header = () => {
           >
             Weather App
           </Typography>
-        </Box>
-        <Box sx={{ width: 40 }} /> {/* Spacer for balance */}
+        </Link>
       </Toolbar>
     </StyledAppBar>
   );
